@@ -1,0 +1,49 @@
+classDiagram
+    class User {
+        +int id
+        +string email
+        +string hashed_password
+        +string watched_entities
+        +datetime created_at
+    }
+
+    class MediaAsset {
+        +int id
+        +int owner_id
+        +string original_filename
+        +string stored_path
+        +string media_type
+        +string status
+        +string task_id
+        +text transcript
+        +text summary
+        +text entities
+        +text alert_matches
+        +text error_message
+        +datetime created_at
+        +datetime updated_at
+    }
+
+    class AnalysisPipeline {
+        +extract_audio()
+        +transcribe()
+        +summarize()
+        +extract_entities()
+        +detect_alert_matches()
+    }
+
+    class AuthService {
+        +hash_password()
+        +verify_password()
+        +create_access_token()
+        +get_current_user()
+    }
+
+    class MediaTask {
+        +process_media()
+    }
+
+    User "1" --> "0..*" MediaAsset : owns
+    MediaTask --> MediaAsset : updates
+    MediaTask --> AnalysisPipeline : uses
+    AuthService --> User : authenticates

@@ -1,0 +1,12 @@
+.env
+.venv
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+storage/uploads/
+storage/local-dev.db
+storage/whisper-cache/
+frontend/.env.local
+frontend/node_modules/
+frontend/.next/

@@ -1,0 +1,679 @@
+========================================================================
+TECHNICAL UNIVERSITY ASSIGNMENT SUBMISSION
+========================================================================
+
+Course Deliverable:
+Software Engineering Specification and Functional Prototype Package
+
+Project Title:
+MULTIMEDIAANALYZER
+Audio and Video Content Analysis Tools
+
+Project Definition:
+A system enabling upload, transcription, summarization, and AI analysis of
+audio and video files. The system stores results in a database and alerts the
+user when specific entities are detected.
+
+Submission Type:
+Single consolidated PDF report with integrated specification artifacts
+
+Repository:
+/Users/erni/Desktop/PSE/multimedia_analyzer
+
+Prepared Submission Date:
+2026-03-03
+
+========================================================================
+TABLE OF CONTENTS
+========================================================================
+
+1. Executive Summary
+2. Requirements Analysis
+3. Requirements Prioritization (MoSCoW)
+4. Use Case Model
+5. Conceptual Model (Class Diagram)
+6. State Diagrams
+7. Sequence and Activity Diagrams
+8. UI Design
+9. Testing Strategy and Test Cases
+10. Delivery Package
+11. Extra Points: AI Prototype Prompt
+12. Extra Points: Prototype Test Report
+13. Current Functional Prototype Status
+14. Conclusion
+Appendix A. Prioritized Requirements Table
+Appendix B. Diagram Source Appendix
+Appendix C. Test Case Traceability
+
+========================================================================
+1. EXECUTIVE SUMMARY
+========================================================================
+
+MultimediaAnalyzer is a full-stack application concept and working MVP
+prototype designed for the analysis of spoken content in audio and video
+materials. The system allows authenticated users to upload multimedia files,
+process them asynchronously, generate transcripts and summaries, detect named
+entities, compare these entities against a user-defined watchlist, and store the
+results for later inspection.
+
+The objective of this submission is twofold:
+
+1. Provide a complete software engineering specification package covering
+   analysis, modeling, prioritization, testing, and UI design.
+2. Demonstrate that the implemented prototype follows the designed
+   specification and can be extended into a production-grade application.
+
+The current implementation already contains:
+
+- FastAPI backend
+- JWT authentication
+- SQLAlchemy persistence
+- PostgreSQL-ready schema
+- Celery worker pipeline
+- Redis broker integration
+- FFmpeg-ready media handling
+- React/Next.js dashboard
+- Watchlist and alert logic
+
+This document consolidates the required academic deliverables into a single
+submission-ready file.
+
+========================================================================
+2. REQUIREMENTS ANALYSIS
+========================================================================
+
+2.1 Product Objective
+
+The system must help users analyze recorded speech content from uploaded media.
+It is intended for review of interviews, meetings, podcasts, news clips,
+training sessions, or other audio/video records where rapid content extraction
+and entity-based alerting are valuable.
+
+2.2 Problem Statement
+
+Manual review of long audio and video recordings is slow and inefficient. Users
+need a system that can:
+
+- ingest media files,
+- convert speech into text,
+- summarize the content,
+- extract important named entities,
+- and signal when specific monitored entities are mentioned.
+
+2.3 Stakeholders
+
+- End users performing content review
+- Instructors / evaluators reviewing the assignment
+- Developers extending the system
+- Administrators deploying the environment
+
+2.4 Actors
+
+- Authenticated User
+- Administrator
+- Background Worker
+- Optional AI provider or local AI runtime
+
+2.5 User Stories
+
+US-01 As a user, I want to register so I can access a protected workspace.
+US-02 As a user, I want to log in securely so I can access only my own records.
+US-03 As a user, I want to upload audio or video files for analysis.
+US-04 As a user, I want processing to run asynchronously so the UI stays usable.
+US-05 As a user, I want a transcript from uploaded media.
+US-06 As a user, I want a summary so I can review the content quickly.
+US-07 As a user, I want named entities extracted from the transcript.
+US-08 As a user, I want to manage a watchlist of important entities.
+US-09 As a user, I want to be alerted when a watched entity appears.
+US-10 As a user, I want to view past results in one dashboard.
+US-11 As an evaluator, I want all software engineering artifacts clearly
+      documented in one deliverable.
+US-12 As an administrator, I want the app stack to run in containers.
+
+2.6 Use Cases
+
+UC-01 Register user
+UC-02 Login user
+UC-03 Upload media file
+UC-04 Queue media processing
+UC-05 Transcribe uploaded media
+UC-06 Summarize transcript
+UC-07 Extract named entities
+UC-08 Compare entities with watchlist
+UC-09 Persist analysis outputs
+UC-10 Display dashboard results
+UC-11 Update entity watchlist
+UC-12 Review alert matches
+
+2.7 Functional Requirements
+
+FR-01 The system shall support account registration.
+FR-02 The system shall support account login.
+FR-03 The system shall use JWT for session authentication.
+FR-04 The system shall allow authenticated users to upload media.
+FR-05 The system shall persist uploaded file metadata.
+FR-06 The system shall queue processing through a worker.
+FR-07 The system shall support audio extraction from video.
+FR-08 The system shall generate transcript output.
+FR-09 The system shall generate summary output.
+FR-10 The system shall generate named entity output.
+FR-11 The system shall compare entities to a user watchlist.
+FR-12 The system shall store alert matches in persistent storage.
+FR-13 The system shall present results in a dashboard.
+
+2.8 Non-Functional Requirements
+
+NFR-01 The solution shall be deployable with Docker Compose.
+NFR-02 The application shall be responsive on desktop and mobile.
+NFR-03 The backend, worker, database, and frontend shall be separated.
+NFR-04 User data shall be isolated by authenticated identity.
+NFR-05 The solution shall be demonstrable as a functional MVP.
+
+========================================================================
+3. REQUIREMENTS PRIORITIZATION (MoSCoW)
+========================================================================
+
+The selected prioritization method is MoSCoW:
+
+- Must: essential for the MVP and assignment objective
+- Should: strongly valuable and expected in a polished version
+- Could: beneficial extensions if time permits
+- Won't: intentionally excluded from current scope
+
+Priority decisions:
+
+- Authentication, upload, processing, persistence, and dashboard visibility are
+  mandatory because they define the core business value.
+- Summarization, NER, watchlist configuration, and alert presentation are
+  highly important and should be part of the intended system behavior.
+- External notifications and advanced filtering are enhancements rather than
+  MVP blockers.
+- Anonymous access is intentionally excluded because it conflicts with secure
+  user-specific result storage.
+
+Detailed prioritized table is included in Appendix A and exported in:
+docs/assignment/prioritized_requirements.csv
+
+========================================================================
+4. USE CASE MODEL
+========================================================================
+
+4.1 Use Case Overview
+
+The authenticated user is the primary actor. The user must be able to register,
+authenticate, upload media, manage a watchlist, and review analysis results.
+
+The upload use case is central and triggers a chain of dependent system actions:
+
+- queue processing
+- transcribe media
+- summarize content
+- extract entities
+- compare to watchlist
+- store outputs
+
+4.2 Use Case Quality Notes
+
+The model emphasizes traceability:
+
+- Each main user story maps to one or more concrete use cases.
+- Each use case maps to implemented routes or background logic.
+- Each use case is represented in the testing section.
+
+Use case diagram source is embedded in Appendix B.
+
+========================================================================
+5. CONCEPTUAL MODEL (CLASS DIAGRAM)
+========================================================================
+
+The conceptual class model captures both data entities and service-level
+responsibilities.
+
+5.1 Core Domain Entities
+
+User:
+- uniquely identified account
+- owns media records
+- contains serialized watchlist configuration
+
+MediaAsset:
+- stores metadata about uploaded media
+- stores processing status
+- stores transcript, summary, extracted entities, and alert matches
+
+5.2 Service Components
+
+AuthService:
+- credential hashing
+- credential validation
+- JWT issuance
+- current user resolution
+
+AnalysisPipeline:
+- audio extraction
+- transcription
+- summarization
+- entity extraction
+- alert-match detection
+
+MediaTask:
+- worker-executed processing orchestration
+
+5.3 Design Rationale
+
+This model creates a clean separation between:
+
+- persistence layer,
+- API layer,
+- background execution,
+- and analysis logic.
+
+It is intentionally strong enough for extension without requiring a redesign.
+
+Class diagram source is embedded in Appendix B.
+
+========================================================================
+6. STATE DIAGRAMS
+========================================================================
+
+6.1 MediaAsset State Model
+
+The MediaAsset entity is state-driven because processing is asynchronous.
+
+States:
+- queued
+- processing
+- completed
+- alerted
+- failed
+
+State logic:
+
+- queued is assigned immediately after upload.
+- processing is assigned when the worker starts.
+- completed is assigned when processing ends without watchlist matches.
+- alerted is assigned when watchlist matches exist.
+- failed is assigned when the pipeline encounters a processing error.
+
+6.2 User Session State Model
+
+The user interaction lifecycle has its own compact state model:
+
+- anonymous
+- registered
+- authenticated
+
+The logout operation transitions authenticated users back to anonymous state.
+
+State diagram sources are embedded in Appendix B.
+
+========================================================================
+7. SEQUENCE AND ACTIVITY DIAGRAMS
+========================================================================
+
+7.1 Sequence Diagram: Main Process
+
+The primary sequence demonstrates full system collaboration:
+
+1. User logs in through the frontend.
+2. Frontend calls the FastAPI authentication endpoint.
+3. API validates the user in PostgreSQL.
+4. API returns JWT token.
+5. User uploads media through the dashboard.
+6. API stores media metadata and queues a Celery task.
+7. Redis passes the job to the worker.
+8. Worker processes the media.
+9. Worker saves outputs back to PostgreSQL.
+10. User refreshes the dashboard to review results.
+
+This sequence shows correct separation of synchronous and asynchronous work.
+
+7.2 Activity Diagram: Upload and Analysis
+
+This activity diagram models the complete media ingestion process from file
+selection to stored results.
+
+7.3 Activity Diagram: Watchlist and Alerting
+
+This activity diagram models the capture of watchlist settings and the later
+comparison of detected entities during analysis.
+
+All diagram sources are embedded in Appendix B.
+
+========================================================================
+8. UI DESIGN
+========================================================================
+
+8.1 UI Objective
+
+The UI is designed as an operational dashboard rather than a generic form page.
+The aim is to present the workflow clearly:
+
+- authenticate,
+- upload,
+- configure watchlist,
+- review results.
+
+8.2 Key Screens / Regions
+
+- Hero overview and project identity
+- Live status control card
+- Authentication card
+- Upload card
+- Watchlist management card
+- Results feed with summaries, entities, alerts, and transcript details
+
+8.3 Design Quality Considerations
+
+- Clear visual hierarchy
+- Distinct action zones
+- Immediate user feedback
+- Mobile-first stacking behavior
+- Strong readability for analytical content
+
+8.4 Figma / Visual Design Guidance
+
+If a separate visual design artifact is needed, the implemented UI can be
+mirrored in Figma using desktop, tablet, and mobile frames. The live app itself
+is already suitable as the prototype reference.
+
+========================================================================
+9. TESTING STRATEGY AND TEST CASES
+========================================================================
+
+9.1 Test Strategy
+
+The testing strategy is use-case driven. Each key use case is covered by one or
+more explicit test cases.
+
+Test layers:
+
+- Unit tests
+- API tests
+- Integration tests
+- UI flow validation
+- Acceptance tests
+
+9.2 Core Test Set
+
+TC-01 Register New User
+TC-02 Login Existing User
+TC-03 Upload Audio File
+TC-04 Upload Video File
+TC-05 Update Watchlist
+TC-06 Alert Match Detected
+TC-07 Unauthorized Upload Attempt
+TC-08 Invalid Login
+
+9.3 Expected Evaluation Strength
+
+This strategy is strong for academic evaluation because it directly links:
+
+- requirements,
+- use cases,
+- implementation behavior,
+- and observable outcomes.
+
+Detailed traceability is included in Appendix C.
+
+========================================================================
+10. DELIVERY PACKAGE
+========================================================================
+
+The assignment requests a single PDF file. This document is that consolidated
+package. It centralizes the specification and references all implemented and
+documented repository artifacts so the deliverable is self-contained.
+
+Primary submission file:
+MultimediaAnalyzer_Assignment_Report_Final.pdf
+
+========================================================================
+11. EXTRA POINTS: AI PROTOTYPE PROMPT (30p)
+========================================================================
+
+To satisfy the extra-credit requirement, the project includes a formal prompt
+for an AI system to construct the functional prototype based on the created
+specification.
+
+Prompt objective:
+
+- define architecture,
+- define endpoint contracts,
+- define function prototypes,
+- define task signatures,
+- define data model contracts.
+
+The prompt source is included in the repository and referenced in Appendix A.
+
+========================================================================
+12. EXTRA POINTS: PROTOTYPE TEST REPORT (10p)
+========================================================================
+
+The project includes a reusable test report template tied directly to the
+specified test cases. This supports evidence-based evaluation of the prototype.
+
+The template captures:
+
+- environment,
+- test totals,
+- pass/fail summary,
+- per-test evidence,
+- notes.
+
+This makes the prototype verification process auditable and easy to present.
+
+========================================================================
+13. CURRENT FUNCTIONAL PROTOTYPE STATUS
+========================================================================
+
+13.1 Already Implemented
+
+- FastAPI backend API
+- JWT authentication
+- SQLAlchemy models
+- PostgreSQL schema and migration artifact
+- Celery worker
+- Redis integration
+- Media upload flow
+- Watchlist storage
+- Alert state logic
+- Responsive Next.js frontend dashboard
+
+13.2 Current Prototype Limitation
+
+The current media analysis layer uses deterministic placeholder logic for:
+
+- transcription
+- summarization
+- named entity extraction
+
+This is intentional for stable local demonstration. The architecture is already
+prepared for replacement with:
+
+- OpenAI Whisper or Faster-Whisper
+- OpenAI API or HuggingFace summarization
+- spaCy or Transformer-based NER
+
+13.3 Why This Is Acceptable For Evaluation
+
+The assignment emphasizes specification, modeling, prioritization, process
+representation, testing design, and a function prototype. The current MVP
+meets these goals while preserving a clear extension path to real AI services.
+
+========================================================================
+14. CONCLUSION
+========================================================================
+
+This submission provides a coherent, well-structured software engineering
+package for MultimediaAnalyzer. It includes the required analytical,
+architectural, behavioral, UI, and testing artifacts, and it aligns these
+artifacts with an implemented functional prototype.
+
+From an evaluation standpoint, the project demonstrates:
+
+- traceable requirements,
+- rational prioritization,
+- coherent system modeling,
+- an implementable architecture,
+- a presentable UI,
+- and a test-driven validation framework.
+
+This makes the project suitable as a high-quality academic submission and a
+credible foundation for further technical development.
+
+========================================================================
+APPENDIX A. PRIORITIZED REQUIREMENTS TABLE
+========================================================================
+
++------+----------------------------------------------------+--------------------------+----------+
+| ID   | User Story                                         | Use Case                 | Priority |
++------+----------------------------------------------------+--------------------------+----------+
+| P-01 | Register and sign in securely                      | UC-01, UC-02            | Must     |
+| P-02 | Upload audio or video for analysis                 | UC-03                   | Must     |
+| P-03 | Process uploads asynchronously                     | UC-04                   | Must     |
+| P-04 | Produce transcript output                          | UC-05                   | Must     |
+| P-05 | Persist analysis results                           | UC-09                   | Must     |
+| P-06 | View results in dashboard                          | UC-10                   | Must     |
+| P-07 | Generate transcript summary                        | UC-06                   | Should   |
+| P-08 | Extract named entities                             | UC-07                   | Should   |
+| P-09 | Configure watchlist                                | UC-11                   | Should   |
+| P-10 | Highlight alert matches                            | UC-12                   | Should   |
+| P-11 | Deploy with Docker Compose                         | Deployment              | Should   |
+| P-12 | Send external notifications                        | Extension               | Could    |
+| P-13 | Filter historical records                          | Extension               | Could    |
+| P-14 | Full AI runtime integration tests                  | Extension               | Could    |
+| P-15 | Anonymous use without login                        | Out of scope            | Won't    |
++------+----------------------------------------------------+--------------------------+----------+
+
+========================================================================
+APPENDIX B. DIAGRAM SOURCE APPENDIX
+========================================================================
+
+B.1 Use Case Diagram (Mermaid Source)
+
+flowchart LR
+    user([Authenticated User])
+    admin([Administrator])
+    system((MultimediaAnalyzer))
+    user --> uc1([Register])
+    user --> uc2([Login])
+    user --> uc3([Upload Media])
+    user --> uc4([View Dashboard])
+    user --> uc5([Update Watchlist])
+    user --> uc6([Review Alert Matches])
+    uc3 --> uc7([Queue Processing])
+    uc7 --> uc8([Transcribe Media])
+    uc8 --> uc9([Summarize Transcript])
+    uc8 --> uc10([Extract Entities])
+    uc10 --> uc11([Compare With Watchlist])
+    uc11 --> uc12([Store Results])
+    admin --> uc13([Run Containerized Deployment])
+
+B.2 Conceptual Model Class Diagram (Mermaid Source)
+
+classDiagram
+    class User {
+        +int id
+        +string email
+        +string hashed_password
+        +string watched_entities
+        +datetime created_at
+    }
+    class MediaAsset {
+        +int id
+        +int owner_id
+        +string original_filename
+        +string stored_path
+        +string media_type
+        +string status
+        +string task_id
+        +text transcript
+        +text summary
+        +text entities
+        +text alert_matches
+        +text error_message
+        +datetime created_at
+        +datetime updated_at
+    }
+    class AnalysisPipeline {
+        +extract_audio()
+        +transcribe()
+        +summarize()
+        +extract_entities()
+        +detect_alert_matches()
+    }
+    class AuthService {
+        +hash_password()
+        +verify_password()
+        +create_access_token()
+        +get_current_user()
+    }
+    class MediaTask {
+        +process_media()
+    }
+    User "1" --> "0..*" MediaAsset : owns
+
+B.3 State Diagram Summary
+
+MediaAsset:
+[*] --> queued --> processing --> completed
+processing --> alerted
+processing --> failed
+
+User Session:
+[*] --> anonymous --> registered --> authenticated --> anonymous
+
+B.4 Sequence Diagram Summary
+
+User -> Frontend -> API -> Database
+User -> Frontend -> API -> Queue -> Worker -> Database
+User -> Frontend -> API -> Database -> Frontend
+
+B.5 Activity Diagram Summary
+
+Upload and Analysis:
+Select file -> validate session -> upload -> store -> queue task ->
+process -> transcribe -> summarize -> extract entities -> compare watchlist ->
+store results
+
+Watchlist and Alerting:
+Open watchlist -> edit entities -> save -> later compare during processing ->
+set alerted/completed
+
+========================================================================
+APPENDIX C. TEST CASE TRACEABILITY
+========================================================================
+
++--------+--------------------------+-------------------------------+
+| Test   | Use Case                 | Validated Requirement Area    |
++--------+--------------------------+-------------------------------+
+| TC-01  | Register user            | Authentication                |
+| TC-02  | Login user               | Authentication                |
+| TC-03  | Upload media             | Upload + persistence          |
+| TC-04  | Upload media             | Video extraction path         |
+| TC-05  | Update watchlist         | Watchlist management          |
+| TC-06  | Review alert matches     | Entity matching + state       |
+| TC-07  | Upload media             | Access control                |
+| TC-08  | Login user               | Error handling                |
++--------+--------------------------+-------------------------------+
+
+========================================================================
+REFERENCED REPOSITORY ARTIFACTS
+========================================================================
+
+- docs/assignment/requirements_analysis.md
+- docs/assignment/prioritized_requirements.csv
+- docs/assignment/use_case_diagram.mmd
+- docs/assignment/conceptual_model_class_diagram.mmd
+- docs/assignment/state_diagrams.mmd
+- docs/assignment/sequence_main_process.mmd
+- docs/assignment/activity_upload_and_analysis.mmd
+- docs/assignment/activity_watchlist_alerting.mmd
+- docs/assignment/ui_design_spec.md
+- docs/assignment/testing_strategy_and_cases.md
+- docs/assignment/ai_prototype_prompt.md
+- docs/assignment/test_report_template.md
+
+========================================================================
+END OF FINAL SUBMISSION DOCUMENT
+========================================================================

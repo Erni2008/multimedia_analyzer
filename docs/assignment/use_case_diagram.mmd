@@ -1,0 +1,28 @@
+flowchart LR
+    user([Authenticated User])
+    admin([Administrator])
+    system((MultimediaAnalyzer))
+
+    user --> uc1([Register])
+    user --> uc2([Login])
+    user --> uc3([Upload Media])
+    user --> uc4([View Dashboard])
+    user --> uc5([Update Watchlist])
+    user --> uc6([Review Alert Matches])
+
+    uc3 --> uc7([Queue Processing])
+    uc7 --> uc8([Transcribe Media])
+    uc8 --> uc9([Summarize Transcript])
+    uc8 --> uc10([Extract Entities])
+    uc10 --> uc11([Compare With Watchlist])
+    uc11 --> uc12([Store Results])
+
+    admin --> uc13([Run Containerized Deployment])
+
+    system --- uc1
+    system --- uc2
+    system --- uc3
+    system --- uc4
+    system --- uc5
+    system --- uc6
+    system --- uc13

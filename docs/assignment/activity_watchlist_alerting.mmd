@@ -1,0 +1,13 @@
+flowchart TD
+    A([Start]) --> B[User opens watchlist settings]
+    B --> C[User enters entities]
+    C --> D[Submit watchlist]
+    D --> E[API validates authenticated user]
+    E --> F[Save comma-separated watchlist to database]
+    F --> G[Future media task reads watchlist]
+    G --> H[Detected entities compared to watchlist]
+    H --> I{Any matches?}
+    I -- Yes --> J[Save alert_matches and set status alerted]
+    I -- No --> K[Save no matches and set status completed]
+    J --> L([End])
+    K --> L

@@ -1,0 +1,21 @@
+flowchart TD
+    A([Start]) --> B[User selects file]
+    B --> C{Authenticated?}
+    C -- No --> D[Show sign-in required message]
+    D --> Z([End])
+    C -- Yes --> E[Upload file to API]
+    E --> F[Store file on disk]
+    F --> G[Create MediaAsset in database]
+    G --> H[Queue background task]
+    H --> I[Worker starts processing]
+    I --> J{Video file?}
+    J -- Yes --> K[Extract audio with FFmpeg]
+    J -- No --> L[Use audio directly]
+    K --> M[Transcribe content]
+    L --> M
+    M --> N[Generate summary]
+    N --> O[Extract entities]
+    O --> P[Compare entities with watchlist]
+    P --> Q[Store analysis results]
+    Q --> R[Set status completed or alerted]
+    R --> Z([End])

@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant U as User
+    participant FE as Frontend
+    participant API as FastAPI
+    participant DB as PostgreSQL
+    participant Q as Celery/Redis
+    participant W as Worker
+
+    U->>FE: Sign in
+    FE->>API: POST /api/auth/login
+    API->>DB: Validate user
+    DB-->>API: User record
+    API-->>FE: JWT token
+
+    U->>FE: Upload media
+    FE->>API: POST /api/media/upload
+    API->>DB: Save MediaAsset(status=queued)
+    API->>Q: Enqueue process_media(asset_id)
+    API-->>FE: Upload accepted
+
+    Q->>W: Deliver queued task
+    W->>DB: Set status=processing
+    W->>W: Extract audio / transcribe / summarize / detect entities
+    W->>DB: Save transcript, summary, entities, alert_matches
+    W->>DB: Set status=completed or alerted
+
+    U->>FE: Refresh dashboard
+    FE->>API: GET /api/media
+    API->>DB: Read assets
+    API-->>FE: Results list

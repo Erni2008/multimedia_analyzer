@@ -1,0 +1,20 @@
+stateDiagram-v2
+    state "MediaAsset Lifecycle" as MediaAssetLifecycle {
+        [*] --> queued
+        queued --> processing
+        processing --> completed
+        processing --> alerted
+        processing --> failed
+        completed --> [*]
+        alerted --> [*]
+        failed --> [*]
+    }
+
+    ---
+
+    state "User Session" as UserSession {
+        [*] --> anonymous
+        anonymous --> registered
+        registered --> authenticated
+        authenticated --> anonymous : logout
+    }

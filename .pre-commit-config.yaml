@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-json
+  - repo: local
+    hooks:
+      - id: backend-tests
+        name: backend-tests
+        entry: python3 scripts/run_tests.py --mode local
+        language: system
+        pass_filenames: false
+      - id: frontend-lint
+        name: frontend-lint
+        entry: sh -c 'cd frontend && npm run lint'
+        language: system
+        pass_filenames: false
