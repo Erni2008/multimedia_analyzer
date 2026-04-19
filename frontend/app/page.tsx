@@ -208,7 +208,7 @@ export default function HomePage() {
     } catch (error) {
       if (isUnauthorizedError(error)) {
         resetSession("Session expired. Sign in again.");
-      } else {
+      } else if (!options?.quiet) {
         announce(getApiErrorMessage(error), "error");
       }
     } finally {
@@ -238,7 +238,7 @@ export default function HomePage() {
     } catch (error) {
       if (isUnauthorizedError(error)) {
         resetSession("Session expired. Sign in again.");
-      } else {
+      } else if (!options?.quiet) {
         announce(getApiErrorMessage(error), "error");
       }
     } finally {

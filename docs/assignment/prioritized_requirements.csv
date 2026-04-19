@@ -1,4 +1,4 @@
-user_story,use_case,priority
+сделаuser_story,use_case,priority
 "As an authenticated user, I want to register and sign in so that I can securely use the system.","User registration and login","Must"
 "As an authenticated user, I want to upload an audio or video file so that the system can analyze it.","Upload media file","Must"
 "As an authenticated user, I want uploaded media to be processed asynchronously so the UI remains responsive.","Queue media processing","Must"

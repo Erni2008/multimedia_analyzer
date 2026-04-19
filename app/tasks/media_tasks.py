@@ -76,11 +76,12 @@ def process_media(self, asset_id: int) -> dict[str, str | list[str]]:
             audio_path = asset.stored_path
 
         transcript = pipeline.transcribe(audio_path)
+        summary = pipeline.summarize(transcript)
         entities = pipeline.extract_entities(transcript)
         alerts = pipeline.detect_alert_matches(transcript, entities, watchlist)
 
         asset.transcript = transcript
-        asset.summary = None
+        asset.summary = summary
         asset.entities = pipeline.render_entities(entities)
         asset.alert_matches = json.dumps(alerts)
         asset.status = MediaStatus.ALERTED if alerts else MediaStatus.COMPLETED

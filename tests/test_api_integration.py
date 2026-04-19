@@ -114,6 +114,7 @@ class ApiIntegrationTests(unittest.TestCase):
             assert asset is not None
             asset.status = MediaStatus.COMPLETED
             asset.transcript = "OpenAI discussed new workflows."
+            asset.summary = "Quick recap: OpenAI discussed new workflows."
             asset.entities = '[{"text":"OpenAI","label":"ORG"}]'
             db.add(asset)
             db.commit()
@@ -152,6 +153,46 @@ class ApiIntegrationTests(unittest.TestCase):
 
         response = self.client.post(f"/api/media/{asset_id}/recap", headers=headers)
         self.assertEqual(response.status_code, 409)
+
+    def test_worker_processing_generates_summary(self) -> None:
+        from app.tasks.media_tasks import process_media
+
+        token = self._register_and_login()
+        headers = {"Authorization": f"Bearer {token}"}
+
+        with patch("app.routers.media.process_media.delay", return_value=SimpleNamespace(id="task-123")):
+            response = self.client.post(
+                "/api/media/upload",
+                headers=headers,
+                files={"file": ("demo.mp3", io.BytesIO(b"audio-bytes"), "audio/mpeg")},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        asset_id = response.json()["asset_id"]
+
+        with patch("app.tasks.media_tasks.get_watchlist_entities", return_value=["OpenAI"]), patch(
+            "app.tasks.media_tasks.pipeline.transcribe",
+            return_value="OpenAI described a new media workflow for product review.",
+        ), patch(
+            "app.tasks.media_tasks.pipeline.extract_entities",
+            return_value=[{"text": "OpenAI", "label": "ORG"}],
+        ), patch(
+            "app.tasks.media_tasks.pipeline.detect_alert_matches",
+            return_value=["OpenAI"],
+        ):
+            result = process_media(asset_id)
+
+        self.assertEqual(result["status"], "alerted")
+
+        db = SessionLocal()
+        try:
+            asset = db.query(MediaAsset).filter(MediaAsset.id == asset_id).first()
+            self.assertIsNotNone(asset)
+            assert asset is not None
+            self.assertTrue(asset.summary)
+            self.assertTrue(asset.summary.startswith("Quick recap: "))
+        finally:
+            db.close()
 
 
 if __name__ == "__main__":
