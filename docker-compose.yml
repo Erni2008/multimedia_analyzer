@@ -1,7 +1,7 @@
 services:
   api:
     build: .
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     volumes:
       - ./:/app
     ports:
@@ -67,6 +67,8 @@ services:
       - /frontend/.next
     ports:
       - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
     depends_on:
       - api
 

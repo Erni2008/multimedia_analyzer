@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   FormEvent,
   startTransition,
@@ -604,6 +605,12 @@ export default function HomePage() {
               <span className="font-ui rounded-full border border-[color:var(--line)] bg-white/76 px-3 py-1.5 text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-strong)]">
                 Recap
               </span>
+              <Link
+                href="/tests"
+                className="font-ui rounded-full border border-[color:var(--line-strong)] bg-[color:var(--warm-soft)] px-3 py-1.5 text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-strong)]"
+              >
+                Test console
+              </Link>
             </div>
           </div>
           <div className="rounded-[1.75rem] border border-[rgba(255,255,255,0.45)] bg-[linear-gradient(145deg,#16343e,#194a5a,#d56a3a)] px-5 py-5 text-white shadow-[0_34px_90px_-48px_rgba(25,74,90,0.55)] xl:max-w-sm">

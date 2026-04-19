@@ -8,7 +8,7 @@ from sqlalchemy import text
 
 from app.config import settings
 from app.database import engine, init_db
-from app.routers import auth, media
+from app.routers import auth, media, tests
 from worker.celery_worker import celery_app
 
 
@@ -30,6 +30,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(media.router, prefix="/api/media", tags=["media"])
+app.include_router(tests.router, prefix="/api/tests", tags=["tests"])
 
 
 @app.get("/health", tags=["health"])

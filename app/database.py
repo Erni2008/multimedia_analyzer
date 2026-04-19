@@ -4,8 +4,6 @@ from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from alembic import command
-from alembic.config import Config
 
 from app.config import settings
 
@@ -34,12 +32,6 @@ def init_db() -> None:
     from app import models  # noqa: F401
 
     if not settings.auto_create_schema:
-        return
-    database_url = settings.database_url
-    if database_url.startswith("postgresql"):
-        alembic_config = Config("alembic.ini")
-        alembic_config.set_main_option("sqlalchemy.url", database_url)
-        command.upgrade(alembic_config, "head")
         return
 
     Base.metadata.create_all(bind=engine)
